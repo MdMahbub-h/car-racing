@@ -165,6 +165,7 @@ class GameScene extends Phaser.Scene {
 
     if (this.finishTime < 13) {
       this.finised = true;
+      this.time.removeAllEvents();
     }
 
     if (!this.finised) {
@@ -191,6 +192,7 @@ class GameScene extends Phaser.Scene {
       const obstacle = this.finishLine.create(350, -100, obstacleKey);
       obstacle.setVelocityY(50); // Slower than background speed (2)
       obstacle.setScale(1);
+      obstacle.setDepth(20);
       obstacle.setOrigin(0.5, 1);
     }
   }
@@ -218,7 +220,6 @@ class GameScene extends Phaser.Scene {
   }
 
   hitFinishLine(player, obstacle) {
-    this.time.removeAllEvents();
     this.scene.start("EndScene", {
       won: true,
       score: this.score,
