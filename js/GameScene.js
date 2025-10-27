@@ -186,13 +186,14 @@ class GameScene extends Phaser.Scene {
         const obstacle = this.obstacles.create(x, -100, obstacleKey);
         obstacle.setVelocityY(50); // Slower than background speed (2)
         obstacle.setScale(1);
+        obstacle.setDepth(3);
       }
     } else {
       const obstacleKey = "ic_finish_line";
       const obstacle = this.finishLine.create(350, -100, obstacleKey);
       obstacle.setVelocityY(50); // Slower than background speed (2)
       obstacle.setScale(1);
-      obstacle.setDepth(20);
+      obstacle.setDepth(6);
       obstacle.setOrigin(0.5, 1);
     }
   }
