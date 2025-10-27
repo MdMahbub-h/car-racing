@@ -45,10 +45,10 @@ class EndScene extends Phaser.Scene {
     // Player car
     this.player = this.physics.add.sprite(300, 1000, "ic_jazi_car");
     this.player.setCollideWorldBounds(true);
-    this.player.setScale(0.5);
+    this.player.setScale(0.75);
     this.add.rectangle(300, 650, 600, 1300, 0x000000).setAlpha(0.7);
 
-    let wonText = "YOU FAIL !";
+    let wonText = `YOU FAIL !\n\nTOTAL POINTS\n\n${this.score}`;
     if (this.won) {
       wonText = `YOU WIN!!!\n\nTOTAL POINTS\n\n${
         this.score

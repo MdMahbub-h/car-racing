@@ -6,6 +6,7 @@ class StartScene extends Phaser.Scene {
   create() {
     // Background
     // this.scene.start("GameScene");
+    this.speed = 1;
 
     this.bg = this.add.tileSprite(300, 650, 600, 1300, "bg");
 
@@ -40,7 +41,7 @@ class StartScene extends Phaser.Scene {
     // Player car
     this.player = this.physics.add.sprite(300, 1000, "ic_jazi_car");
     this.player.setCollideWorldBounds(true);
-    this.player.setScale(0.5);
+    this.player.setScale(0.75).setOrigin(0.5, 0);
 
     // Play button
     const playButton = this.add
@@ -48,13 +49,59 @@ class StartScene extends Phaser.Scene {
       .setInteractive()
       .setOrigin(0.55);
     playButton.on("pointerdown", () => {
-      this.scene.start("GameScene");
+      this.scene.start("GameScene", {
+        speed: this.speed,
+      });
     });
+
+    const title = this.add.text(300, 300, "RACING CAR", {
+      fontFamily: "Nunito, sans-serif",
+      fontStyle: "bold italic",
+      fontSize: "60px",
+      color: "#ffffffff",
+      align: "center",
+    });
+    title.setOrigin(0.5);
+
+    const speedText = this.add.text(300, 900, "SPEED", {
+      fontFamily: "Nunito, sans-serif",
+      fontStyle: "bold italic",
+      fontSize: "50px",
+      color: "#ffffffff",
+      align: "center",
+    });
+    speedText.setOrigin(0.5);
+
+    this.speedTexts = [];
+
+    for (let i = 0; i < 3; i++) {
+      let speedText = this.add
+        .text(200 + 100 * i, 1000, `${i + 2}X`, {
+          fontFamily: "Nunito, sans-serif",
+          fontStyle: "bold italic",
+          fontSize: "40px",
+          color: "#ffffffff",
+          align: "center",
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", () => {
+          this.speed = i + 2;
+
+          // Reset all colors to white
+          this.speedTexts.forEach((t) => t.setColor("#ffffffff"));
+
+          // Highlight selected one
+          speedText.setColor("#f9a600ff");
+        });
+
+      this.speedTexts.push(speedText);
+    }
 
     // Instructions
     const instructions = this.add.text(
       300,
-      700,
+      500,
       "Use arrow keys\n to move. Avoid\nobstacles and\nReach the finish line!",
       {
         fontFamily: "Nunito, sans-serif",
