@@ -46,7 +46,7 @@ class StartScene extends Phaser.Scene {
     const playButton = this.add
       .image(300, 1100, "startBtn")
       .setInteractive()
-      .setOrigin(0.5);
+      .setOrigin(0.55);
     playButton.on("pointerdown", () => {
       this.scene.start("GameScene");
     });
@@ -60,7 +60,7 @@ class StartScene extends Phaser.Scene {
         fontFamily: "Nunito, sans-serif",
         fontStyle: "bold italic",
         fontSize: "45px",
-        color: "#ffffff",
+        color: "#f9a600ff",
         align: "center",
       }
     );

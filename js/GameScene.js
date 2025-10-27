@@ -43,12 +43,15 @@ class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(10);
 
+    this.finishLineTime = this.finishTime - 15;
     // 🔁 update every second
     this.time.addEvent({
       delay: 1000, // 1 second
       callback: () => {
         if (this.finishTime > 0) {
           this.finishTime--;
+
+          this.finishLineTime--;
 
           const minutes = Math.floor(this.finishTime / 60);
           const seconds = this.finishTime % 60;
@@ -89,6 +92,7 @@ class GameScene extends Phaser.Scene {
     // Obstacles group
     this.obstacles = this.physics.add.group();
     this.trophy = this.physics.add.group();
+    this.bonusTime = this.physics.add.group();
     this.coins = this.physics.add.group();
     this.finishLine = this.physics.add.group();
 
@@ -105,6 +109,14 @@ class GameScene extends Phaser.Scene {
       this.player,
       this.trophy,
       this.hitTrophy,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.player,
+      this.bonusTime,
+      this.hitbonusTime,
       null,
       this
     );
@@ -163,18 +175,24 @@ class GameScene extends Phaser.Scene {
     const lene = [140, 250, 350, 460];
     const x = Phaser.Utils.Array.GetRandom(lene);
 
-    if (this.finishTime < 13) {
+    if (this.finishLineTime <= 0) {
       this.finised = true;
-      this.time.removeAllEvents();
     }
 
     if (!this.finised) {
       if (Phaser.Math.Between(1, 10) <= 3) {
         if (Phaser.Math.Between(1, 3) <= 1) {
-          const obstacleKey = "ic_trophy";
-          const obstacle = this.trophy.create(x, -100, obstacleKey);
-          obstacle.setVelocityY(this.playerSpeed); // Slower than background speed (2)
-          obstacle.setScale(1);
+          if (Phaser.Math.Between(1, 2) <= 1) {
+            const obstacleKey = "ic_clock";
+            const obstacle = this.bonusTime.create(x, -100, obstacleKey);
+            obstacle.setVelocityY(this.playerSpeed); // Slower than background speed (2)
+            obstacle.setScale(0.6);
+          } else {
+            const obstacleKey = "ic_trophy";
+            const obstacle = this.trophy.create(x, -100, obstacleKey);
+            obstacle.setVelocityY(this.playerSpeed); // Slower than background speed (2)
+            obstacle.setScale(1);
+          }
         } else {
           const obstacleKey = "ic_icon";
           const obstacle = this.coins.create(x, -100, obstacleKey);
@@ -185,13 +203,13 @@ class GameScene extends Phaser.Scene {
         const obstacleKey = "ic_blocker_" + Phaser.Math.Between(1, 5);
         const obstacle = this.obstacles.create(x, -100, obstacleKey);
         obstacle.setVelocityY(50); // Slower than background speed (2)
-        obstacle.setScale(1);
+        obstacle.setScale(1.2);
         obstacle.setDepth(3);
       }
     } else {
       const obstacleKey = "ic_finish_line";
       const obstacle = this.finishLine.create(350, -100, obstacleKey);
-      obstacle.setVelocityY(50); // Slower than background speed (2)
+      obstacle.setVelocityY(this.playerSpeed); // Slower than background speed (2)
       obstacle.setScale(1);
       obstacle.setDepth(6);
       obstacle.setOrigin(0.5, 1);
@@ -219,13 +237,22 @@ class GameScene extends Phaser.Scene {
     this.score += 50;
     this.scoreText.setText(this.score);
   }
-
+  hitbonusTime(player, obstacle) {
+    obstacle.disableBody(true, true);
+    this.finishTime += 20;
+    const minutes = Math.floor(this.finishTime / 60);
+    const seconds = this.finishTime % 60;
+    this.timerText.setText(`${minutes}:${seconds.toString().padStart(2, "0")}`);
+  }
   hitFinishLine(player, obstacle) {
-    this.scene.start("EndScene", {
-      won: true,
-      score: this.score,
-      time: this.finishTime,
-    });
+    this.time.removeAllEvents();
+    setTimeout(() => {
+      this.scene.start("EndScene", {
+        won: true,
+        score: this.score,
+        time: this.finishTime,
+      });
+    }, 500);
   }
 }
 

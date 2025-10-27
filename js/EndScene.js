@@ -50,13 +50,15 @@ class EndScene extends Phaser.Scene {
 
     let wonText = "YOU FAIL !";
     if (this.won) {
-      wonText = `YOU WIN!!!\n\nTOTAL POINTS\n\n${this.score}`;
+      wonText = `YOU WIN!!!\n\nTOTAL POINTS\n\n${
+        this.score
+      }\n\nREMAINING TIME\n\n${minutes}:${seconds.toString().padStart(2, "0")}`;
     }
     let LastText = this.add.text(300, 450, `${wonText}`, {
       fontFamily: "Nunito, sans-serif",
       fontStyle: "bold italic",
       fontSize: "45px",
-      color: "#f97000ff",
+      color: "#f9a600ff",
       align: "center",
     });
     LastText.setOrigin(0.5);
