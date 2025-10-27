@@ -203,7 +203,7 @@ class GameScene extends Phaser.Scene {
         const obstacleKey = "ic_blocker_" + Phaser.Math.Between(1, 5);
         const obstacle = this.obstacles.create(x, -100, obstacleKey);
         obstacle.setVelocityY(50); // Slower than background speed (2)
-        obstacle.setScale(1.2);
+        obstacle.setScale(1.4);
         obstacle.setDepth(3);
       }
     } else {
@@ -257,3 +257,4 @@ class GameScene extends Phaser.Scene {
 }
 
 export default GameScene;
+
