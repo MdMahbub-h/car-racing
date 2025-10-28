@@ -21,7 +21,7 @@ class StartScene extends Phaser.Scene {
       .setScale(0.55);
 
     this.timerText = this.add
-      .text(88, 180, "2:00", {
+      .text(88, 180, "1:00", {
         fontFamily: "MyGameFont",
         fontSize: "25px",
         color: "#ffffff",
@@ -150,3 +150,4 @@ class StartScene extends Phaser.Scene {
 }
 
 export default StartScene;
+
