@@ -11,73 +11,66 @@ class EndScene extends Phaser.Scene {
 
   create() {
     // Background
-    this.bg = this.add.tileSprite(300, 650, 600, 1300, "bg");
-
-    this.timerBG = this.add
-      .image(30, 50, "timer")
-      .setOrigin(0, 0)
-      .setScale(0.55);
-    this.scoreBG = this.add
-      .image(570, 50, "score")
-      .setOrigin(1, 0)
-      .setScale(0.55);
-
-    const minutes = Math.floor(this.finishTime / 60);
-    const seconds = this.finishTime % 60;
-
-    this.timerText = this.add
-      .text(88, 80, `${minutes}:${seconds.toString().padStart(2, "0")}`, {
-        fontFamily: "Nunito, sans-serif",
-        fontStyle: "bold italic",
-        fontSize: "25px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
-
+    this.paused = true;
+    this.endMenuItems = [];
+    this.blurBg = this.add.image(0, 0, "blurBg").setOrigin(0, 0).setDepth(11);
+    this.endMenu = this.add
+      .image(300, 450, "gameOver")
+      .setOrigin(0.5, 0)
+      .setDepth(11)
+      .setScale(1);
     this.scoreText = this.add
-      .text(600 - 160, 80, this.score, {
+      .text(300, 706, this.score, {
         fontFamily: "Nunito, sans-serif",
         fontStyle: "bold italic",
-        fontSize: "25px",
+        fontSize: "75px",
         color: "#ffffff",
       })
-      .setOrigin(0, 0.5);
-    // Player car
-    this.player = this.physics.add.sprite(300, 1000, "ic_jazi_car");
-    this.player.setCollideWorldBounds(true);
-    this.player.setScale(0.75);
-    this.add.rectangle(300, 650, 600, 1300, 0x000000).setAlpha(0.7);
+      .setOrigin(0.5)
+      .setDepth(11)
+      .setScale(0.7)
+      .setInteractive({ useHandCursor: true });
+    this.crossBtnP = this.add
+      .image(525, 492, "ic_close_dialog")
+      .setOrigin(0.5)
+      .setDepth(11)
+      .setScale(1.6)
+      .setInteractive({ useHandCursor: true });
 
-    let wonText = `YOU FAIL !\n\nTOTAL POINTS\n\n${this.score}`;
-    if (this.won) {
-      wonText = `YOU WIN!!!\n\nTOTAL POINTS\n\n${
-        this.score
-      }\n\nREMAINING TIME\n\n${minutes}:${seconds.toString().padStart(2, "0")}`;
-    }
-    let LastText = this.add.text(300, 450, `${wonText}`, {
-      fontFamily: "Nunito, sans-serif",
-      fontStyle: "bold italic",
-      fontSize: "45px",
-      color: "#f9a600ff",
-      align: "center",
+    this.endMenuItems.push(this.blurBg);
+    this.endMenuItems.push(this.endMenu);
+    this.endMenuItems.push(this.yesBtn);
+    this.endMenuItems.push(this.crossBtnP);
+
+    this.scoreText.on("pointerdown", () => {
+      this.tweens.add({
+        targets: this.scoreText,
+        scale: 0.6,
+        duration: 100,
+        ease: "Power1",
+        yoyo: true,
+        onComplete: () => {
+          // this.scene.start("StartScene");
+        },
+      });
     });
-    LastText.setOrigin(0.5);
-
-    let playAgainText = this.add.text(300, 1000, `PLAY AGAIN`, {
-      fontFamily: "Nunito, sans-serif",
-      fontStyle: "bold italic",
-      fontSize: "35px",
-      color: "#f9a600ff",
-      align: "center",
-    });
-    playAgainText.setOrigin(0.5);
-
-    const playButton = this.add
-      .image(300, 1100, "startBtn")
-      .setInteractive()
-      .setOrigin(0.5);
-    playButton.on("pointerdown", () => {
-      this.scene.start("GameScene");
+    this.crossBtnP.on("pointerdown", () => {
+      this.tweens.add({
+        targets: this.crossBtnP,
+        scale: 1.3,
+        duration: 100,
+        ease: "Power1",
+        yoyo: true,
+        onComplete: () => {
+          this.endMenuItems.forEach((item) => {
+            if (item) {
+              item.destroy();
+            }
+          });
+          this.endMenuItems = [];
+          this.scene.start("StartScene");
+        },
+      });
     });
   }
 }

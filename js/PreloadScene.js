@@ -22,6 +22,8 @@ class PreloadScene extends Phaser.Scene {
     this.load.image("ic_gift_box", "assets/car/ic_gift_box.png");
     this.load.image("ic_icon", "assets/car/ic_icon.png");
     this.load.image("ic_clock", "assets/car/ic_clock.png");
+    this.load.image("blurBg", "assets/car/blurBg.png");
+    this.load.image("gameOver", "assets/car/gameOver.png");
 
     this.load.image("timer", "assets/car/timer.png");
     this.load.image("score", "assets/car/score.png");
