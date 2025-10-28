@@ -1,3 +1,7 @@
+function exitedDetermination() {
+  console.log("exited");
+}
+
 class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: "GameScene" });
@@ -6,14 +10,14 @@ class GameScene extends Phaser.Scene {
     console.log("game");
     this.initialRoadSpeed = 300;
     this.speedIncrease = 1; //1,0,-1
-    this.speedIncreaseRate = 0.2; //in every 10 second
+    this.speedIncreaseRate = 0.3; //in every 10 second
     this.obstacleSpawnRate = 2;
-    this.coinSpawnRate = 1.8;
+    this.coinSpawnRate = 2.5;
     this.jaziItemSpawnRate = 0.4;
     this.gameDuration = 60;
-    this.coinPoints = 25;
-    this.jaziItemPoints = 50;
-    this.obstaclePointsPenalty = 15;
+    this.coinPoints = 5;
+    this.jaziItemPoints = 25;
+    this.obstaclePointsPenalty = 5;
     this.maxSpeed = 500;
 
     // for adjust
@@ -27,10 +31,11 @@ class GameScene extends Phaser.Scene {
     this.finised = false;
 
     this.lene = [140, 250, 350, 460];
-    this.currentElementLane = Phaser.Utils.Array.GetRandom(this.lene);
+    this.currentCarLane = Phaser.Utils.Array.GetRandom(this.lene);
+    this.currentCoinLane = Phaser.Utils.Array.GetRandom(this.lene);
     // this.scene.start("EndScene", {
     //   won: false,
-    //   score: this.score,
+    //   score: 12345546745654,
     //   time: this.gameDuration,
     // });
     this.bgAudio = this.sound.add("bgaudio", { loop: true, volume: 0.5 });
@@ -45,7 +50,7 @@ class GameScene extends Phaser.Scene {
     this.bg = this.add.tileSprite(300, 650, 600, 1300, "bg");
 
     this.crossBtn = this.add
-      .image(60, 120, "ic_cross")
+      .image(550, 1200, "ic_cross")
       .setOrigin(0.5)
       .setDepth(10)
       .setScale(1.4)
@@ -71,19 +76,19 @@ class GameScene extends Phaser.Scene {
       });
 
     this.timerBG = this.add
-      .image(30, 150, "timer")
+      .image(30, 70, "timer")
       .setOrigin(0, 0)
       .setScale(0.55)
       .setDepth(10);
     this.scoreBG = this.add
-      .image(570, 150, "score")
+      .image(570, 70, "score")
       .setOrigin(1, 0)
       .setScale(0.55)
       .setDepth(10);
     this.timerText = this.add
-      .text(88, 180, `0`, {
+      .text(88, 100, `0`, {
         fontFamily: "Nunito, sans-serif",
-        fontStyle: "bold italic",
+        fontStyle: "bold ",
         fontSize: "25px",
         color: "#ffffff",
       })
@@ -91,9 +96,9 @@ class GameScene extends Phaser.Scene {
       .setDepth(10);
     this.updateTime(0);
     this.scoreText = this.add
-      .text(600 - 160, 180, "0", {
+      .text(600 - 160, 100, "0", {
         fontFamily: "Nunito, sans-serif",
-        fontStyle: "bold italic",
+        fontStyle: "bold ",
         fontSize: "25px",
         color: "#ffffff",
       })
@@ -108,17 +113,15 @@ class GameScene extends Phaser.Scene {
         } else {
           this.time.removeAllEvents();
           console.log("Time over!");
-
-          this.loseSound = this.sound.add("lose-sound", { volume: 1 });
           this.timerEvent = this.time.addEvent({
             delay: 200,
             callback: () => {
               this.killAllTimeEvents();
-              this.scene.start("EndScene", {
-                won: false,
-                score: this.score,
-                time: this.gameDuration,
-              });
+              // this.scene.start("EndScene", {
+              //   won: false,
+              //   score: this.score,
+              //   time: this.gameDuration,
+              // });
             },
           });
         }
@@ -129,7 +132,7 @@ class GameScene extends Phaser.Scene {
     // Player car
     this.player = this.physics.add.sprite(250, 950, "ic_jazi_car");
     this.player.setCollideWorldBounds(true);
-    this.playerScale = 0.9;
+    this.playerScale = 0.8;
     this.player.setScale(this.playerScale).setDepth(5).setOrigin(0.5, 0);
 
     this.currentLaneIndex = 1;
@@ -152,17 +155,71 @@ class GameScene extends Phaser.Scene {
       this.physics.add.overlap(this.player, this[key], callback, null, this);
     });
 
+    this.controlls();
+
+    this.speedIncreaseEvent = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        if (this.gameSpeed < this.maxSpeed) {
+          this.gameSpeed +=
+            this.gameSpeedForIncrease * this.speedIncreaseRate * 0.1;
+
+          // Update spawn delays dynamically
+          this.obstacleSpawnEvent.delay =
+            1000 / (this.gameSpeed * 0.5 * this.obstacleSpawnRate);
+          this.coinSpawnEvent.delay =
+            1000 /
+            (this.gameSpeed *
+              0.5 *
+              (this.coinSpawnRate + this.jaziItemSpawnRate));
+
+          // Optional: speed up background scrolling smoothly
+          if (this.myFunctionEvent) {
+            this.myFunctionEvent.callback = () => {
+              this.bg.tilePositionY -= 5 * this.gameSpeed;
+            };
+          }
+        }
+      },
+      loop: true,
+    });
+
+    this.coinSpawnEvent = this.time.addEvent({
+      delay:
+        1000 /
+        (this.gameSpeed * 0.5 * (this.coinSpawnRate + this.jaziItemSpawnRate)),
+      callback: this.spawnCoins,
+      callbackScope: this,
+      loop: true,
+    });
+
+    this.obstacleSpawnEvent = this.time.addEvent({
+      delay: 1000 / (this.gameSpeed * 0.5 * this.obstacleSpawnRate),
+      callback: this.spawnObstacle,
+      callbackScope: this,
+      loop: true,
+    });
+
+    this.myFunctionEvent = this.time.addEvent({
+      delay: 1000 / 60,
+      loop: true,
+      callback: () => {
+        this.bg.tilePositionY -= 5 * this.gameSpeed;
+      },
+    });
+  }
+  controlls() {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.pointerActive = false; // flag to run pointerdown only once
     this.cursorActive = false;
 
-    this.directionInput.on("pointerdown", (pointer) => {
+    this.directionInput.on("pointerup", (pointer) => {
       // Prevent multiple triggers if pointer is still down
       if (this.pointerActive) return;
       this.pointerActive = true;
 
       if (
-        pointer.x > this.player.x + 50 &&
+        pointer.x > this.player.x + 30 &&
         this.currentLaneIndex < this.lanes.length - 1
       ) {
         this.currentLaneIndex++;
@@ -174,7 +231,7 @@ class GameScene extends Phaser.Scene {
           yoyo: true,
           ease: "Power2",
         });
-      } else if (pointer.x < this.player.x - 50 && this.currentLaneIndex > 0) {
+      } else if (pointer.x < this.player.x - 30 && this.currentLaneIndex > 0) {
         this.currentLaneIndex--;
         this.tweens.add({
           targets: this.player,
@@ -200,6 +257,9 @@ class GameScene extends Phaser.Scene {
     // this.directionInput.on("pointerup", () => {
     //   this.pointerActive = false; // reset flag for next press
     // });
+    this.directionInput.on("pointerdown", (pointer) => {
+      this.pointerActive = false;
+    });
     this.input.on("pointerupoutside", () => {
       this.pointerActive = false; // reset flag
     });
@@ -259,57 +319,6 @@ class GameScene extends Phaser.Scene {
     // this.input.keyboard.on("keyup-RIGHT", () => {
     //   this.cursorActive = false;
     // });
-
-    this.speedIncreaseEvent = this.time.addEvent({
-      delay: 1000,
-      callback: () => {
-        if (this.gameSpeed < this.maxSpeed) {
-          this.gameSpeed +=
-            this.gameSpeedForIncrease * this.speedIncreaseRate * 0.1;
-
-          // Update spawn delays dynamically
-          this.obstacleSpawnEvent.delay =
-            1000 / (this.gameSpeed * 0.5 * this.obstacleSpawnRate);
-          this.coinSpawnEvent.delay =
-            1000 /
-            (this.gameSpeed *
-              0.5 *
-              (this.coinSpawnRate + this.jaziItemSpawnRate));
-
-          // Optional: speed up background scrolling smoothly
-          if (this.myFunctionEvent) {
-            this.myFunctionEvent.callback = () => {
-              this.bg.tilePositionY -= 5 * this.gameSpeed;
-            };
-          }
-        }
-      },
-      loop: true,
-    });
-
-    this.coinSpawnEvent = this.time.addEvent({
-      delay:
-        1000 /
-        (this.gameSpeed * 0.5 * (this.coinSpawnRate + this.jaziItemSpawnRate)),
-      callback: this.spawnCoins,
-      callbackScope: this,
-      loop: true,
-    });
-
-    this.obstacleSpawnEvent = this.time.addEvent({
-      delay: 1000 / (this.gameSpeed * 0.5 * this.obstacleSpawnRate),
-      callback: this.spawnObstacle,
-      callbackScope: this,
-      loop: true,
-    });
-
-    this.myFunctionEvent = this.time.addEvent({
-      delay: 1000 / 60,
-      loop: true,
-      callback: () => {
-        this.bg.tilePositionY -= 5 * this.gameSpeed;
-      },
-    });
   }
   pauseMenu() {
     this.pauseGame();
@@ -345,8 +354,10 @@ class GameScene extends Phaser.Scene {
         duration: 100,
         ease: "Power1",
         yoyo: true,
-        onComplete: () => {this.resumeGame()
+        onComplete: () => {
+          this.resumeGame();
           this.killAllTimeEvents();
+          exitedDetermination();
           this.scene.start("StartScene");
         },
       });
@@ -399,6 +410,9 @@ class GameScene extends Phaser.Scene {
   }
   updateScore(add) {
     this.score += add;
+    if (this.score < 0) {
+      this.score = 0;
+    }
     const color = add > 0 ? 0x22ff22 : 0xff2222;
     let addTextValue = add > 0 ? `+${add}` : `${add}`;
     let addText = this.add
@@ -421,43 +435,42 @@ class GameScene extends Phaser.Scene {
       },
     });
 
-    this.tweens.add({
-      targets: this.player,
-      y: this.player.y - 8,
-      scale: this.playerScale * 1.05,
-      duration: 50,
-      ease: "Power2",
-      onComplete: () => {
-        this.tweens.add({
-          targets: this.player,
-          y: this.player.y + 8,
-          scale: this.playerScale * 1.05,
-          duration: 50,
-          ease: "Power2",
-        });
-      },
-    });
+    if (add < 0) {
+      this.tweens.add({
+        targets: this.player,
+        y: this.player.y - 8,
+        scale: this.playerScale * 1.05,
+        duration: 50,
+        ease: "Power2",
+        onComplete: () => {
+          this.tweens.add({
+            targets: this.player,
+            y: this.player.y + 8,
+            scale: this.playerScale * 1.05,
+            duration: 50,
+            ease: "Power2",
+          });
+        },
+      });
+    }
 
-    this.scoreText.setColor(`#${color.toString(16).padStart(6, "0")}`);
-    const oldScore = this.displayedScore || this.score - add; // previous visible value
-    const newScore = this.score;
-    this.displayedScore = oldScore;
-    this.tweens.addCounter({
-      from: oldScore,
-      to: newScore,
-      duration: 400,
-      ease: "Linear",
-      onUpdate: (tween) => {
-        const value = Math.floor(tween.getValue());
-        this.scoreText.setText(value);
-      },
-      onComplete: () => {
-        this.displayedScore = newScore;
-      },
-    });
-    this.time.delayedCall(300, () => {
-      this.scoreText.setColor("#ffffff");
-    });
+    this.scoreText.setText(this.score);
+    // const oldScore = this.displayedScore || this.score - add; // previous visible value
+    // const newScore = this.score;
+    // this.displayedScore = oldScore;
+    // this.tweens.addCounter({
+    //   from: oldScore,
+    //   to: newScore,
+    //   duration: 400,
+    //   ease: "Linear",
+    //   onUpdate: (tween) => {
+    //     const value = Math.floor(tween.getValue());
+    //     this.scoreText.setText(value);
+    //   },
+    //   onComplete: () => {
+    //     this.displayedScore = newScore;
+    //   },
+    // });
   }
 
   update() {
@@ -514,48 +527,36 @@ class GameScene extends Phaser.Scene {
 
   spawnCoins() {
     let x = Phaser.Utils.Array.GetRandom(this.lene);
-    while (this.currentElementLane === x) {
+    while (this.currentCoinLane === x || this.currentCarLane == x) {
       x = Phaser.Utils.Array.GetRandom(this.lene);
     }
-    this.currentElementLane = x;
+    this.currentCoinLane = x;
 
     if (this.finishLineTime <= 0) {
       this.finised = true;
     }
 
-    if (!this.finised) {
-      let randomObstacle = Phaser.Math.Between(
-        1,
-        this.coinSpawnRate * 10 + this.jaziItemSpawnRate * 10
-      );
-      if (randomObstacle < this.jaziItemSpawnRate * 10) {
-        if (Phaser.Math.Between(1, 2) <= 1) {
-          const obstacleKey = "ic_gift_box";
-          const obstacle = this.bonusTime.create(x, -120, obstacleKey);
-          obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
-          obstacle.setScale(1.3);
-
-          this.time.delayedCall(7000, () => {
-            if (obstacle) {
-              obstacle.destroy();
-            }
-          });
-        } else {
-          const obstacleKey = "ic_trophy";
-          const obstacle = this.trophy.create(x, -120, obstacleKey);
-          obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
-          obstacle.setScale(1.2);
-          this.time.delayedCall(7000, () => {
-            if (obstacle) {
-              obstacle.destroy();
-            }
-          });
-        }
-      } else {
-        const obstacleKey = "ic_icon";
-        const obstacle = this.coins.create(x, -120, obstacleKey);
+    let randomObstacle = Phaser.Math.Between(
+      1,
+      this.coinSpawnRate * 10 + this.jaziItemSpawnRate * 10
+    );
+    if (randomObstacle < this.jaziItemSpawnRate * 10) {
+      if (Phaser.Math.Between(1, 2) <= 1) {
+        const obstacleKey = "ic_gift_box";
+        const obstacle = this.bonusTime.create(x, -140, obstacleKey);
         obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
-        obstacle.setScale(0.5);
+        obstacle.setScale(1.3);
+
+        this.time.delayedCall(7000, () => {
+          if (obstacle) {
+            obstacle.destroy();
+          }
+        });
+      } else {
+        const obstacleKey = "ic_trophy";
+        const obstacle = this.trophy.create(x, -140, obstacleKey);
+        obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
+        obstacle.setScale(1.2);
         this.time.delayedCall(7000, () => {
           if (obstacle) {
             obstacle.destroy();
@@ -563,13 +564,24 @@ class GameScene extends Phaser.Scene {
         });
       }
     } else {
+      const obstacleKey = "ic_icon";
+      const obstacle = this.coins.create(x, -140, obstacleKey);
+      obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
+      obstacle.setScale(0.5);
+      this.time.delayedCall(7000, () => {
+        if (obstacle) {
+          obstacle.destroy();
+        }
+      });
+    }
+    if (!this.finised) {
+    } else {
       if (!this.finishCreated) {
         this.finishCreated = true;
         const obstacleKey = "ic_finish_line";
-        const obstacle = this.finishLine.create(350, -200, obstacleKey);
+        const obstacle = this.finishLine.create(300, -100, obstacleKey);
         obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
-        obstacle.setScale(1);
-        obstacle.setDepth(6);
+        obstacle.setScale(0.37);
         obstacle.setOrigin(0.5, 1);
         // this.time.delayedCall(7000, () => {
         //   if (obstacle) {
@@ -581,23 +593,21 @@ class GameScene extends Phaser.Scene {
   }
   spawnObstacle() {
     let x = Phaser.Utils.Array.GetRandom(this.lene);
-    while (this.currentElementLane === x) {
+    while (this.currentCoinLane == x || this.currentCarLane == x) {
       x = Phaser.Utils.Array.GetRandom(this.lene);
     }
-    this.currentElementLane = x;
+    this.currentCarLane = x;
 
-    if (!this.finised) {
-      const obstacleKey = "ic_blocker_" + Phaser.Math.Between(1, 5);
-      const obstacle = this.obstacles.create(x, -120, obstacleKey);
-      obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed);
-      obstacle.setScale(1.6);
-      obstacle.setDepth(3);
-      this.time.delayedCall(7000, () => {
-        if (obstacle) {
-          obstacle.destroy();
-        }
-      });
-    }
+    const obstacleKey = "ic_blocker_" + Phaser.Math.Between(1, 5);
+    const obstacle = this.obstacles.create(x, -100, obstacleKey);
+    obstacle.setVelocityY(this.gameSpeed * this.initialRoadSpeed * 0.9);
+    obstacle.setScale(1.6);
+    obstacle.setDepth(3);
+    this.time.delayedCall(7000, () => {
+      if (obstacle) {
+        obstacle.destroy();
+      }
+    });
   }
 
   hitObstacle(player, obstacle) {
@@ -620,11 +630,21 @@ class GameScene extends Phaser.Scene {
   }
   hitFinishLine(player, obstacle) {
     this.bgAudio.stop();
-    // this.congratsSound = this.sound.add("congrats", { volume: 1 });
-    // this.congratsSound.play();
-    setTimeout(() => {
-      obstacle.disableBody(true, true);
-    }, 1000);
+    this.congratsSound = this.sound.add("congrats", { volume: 1 });
+    this.congratsSound.play();
+
+    this.timerEvent = this.time.addEvent({
+      delay: 100,
+      callback: () => {
+        obstacle.disableBody(true, true);
+        // this.killAllTimeEvents();
+        this.scene.start("EndScene", {
+          won: false,
+          score: this.score,
+          time: this.gameDuration,
+        });
+      },
+    });
   }
   killAllTimeEvents() {
     this.timerEvent.remove(false);
@@ -641,5 +661,3 @@ class GameScene extends Phaser.Scene {
 }
 
 export default GameScene;
-
-

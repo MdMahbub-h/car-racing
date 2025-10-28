@@ -16,15 +16,7 @@ const config = {
   dom: {
     createContainer: true,
   },
-  plugins: {
-    global: [
-      {
-        key: "rexRoundRectangle",
-        plugin: rexroundrectangleplugin,
-        start: true,
-      },
-    ],
-  },
+
   input: {
     activePointers: 3,
   },

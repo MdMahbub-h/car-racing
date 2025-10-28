@@ -23,12 +23,11 @@ class EndScene extends Phaser.Scene {
       .text(300, 706, this.score, {
         fontFamily: "Nunito, sans-serif",
         fontStyle: "bold italic",
-        fontSize: "75px",
+        fontSize: "45px",
         color: "#ffffff",
       })
       .setOrigin(0.5)
       .setDepth(11)
-      .setScale(0.7)
       .setInteractive({ useHandCursor: true });
     this.crossBtnP = this.add
       .image(525, 492, "ic_close_dialog")

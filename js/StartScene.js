@@ -7,34 +7,35 @@ class StartScene extends Phaser.Scene {
     console.log("start");
     // Background
     this.speed = 1;
+    this.duration = 60;
     // this.scene.start("GameScene");
 
     this.bg = this.add.tileSprite(300, 650, 600, 1300, "bg");
 
     this.timerBG = this.add
-      .image(30, 150, "timer")
+      .image(30, 70, "timer")
       .setOrigin(0, 0)
       .setScale(0.55);
     this.scoreBG = this.add
-      .image(570, 150, "score")
+      .image(570, 70, "score")
       .setOrigin(1, 0)
       .setScale(0.55);
 
     this.timerText = this.add
-      .text(88, 180, "1:00", {
-        fontFamily: "MyGameFont",
+      .text(88, 100, "1:00", {
+        fontFamily: "Nunito, sans-serif",
+        fontStyle: "bold ",
         fontSize: "25px",
         color: "#ffffff",
-        fontStyle: "bold",
       })
       .setOrigin(0.5);
 
     this.scoreText = this.add
-      .text(600 - 160, 180, "0", {
-        fontFamily: "MyGameFont",
+      .text(600 - 160, 100, "0", {
+        fontFamily: "Nunito, sans-serif",
+        fontStyle: "bold ",
         fontSize: "25px",
         color: "#ffffff",
-        fontStyle: "bold",
       })
       .setOrigin(0, 0.5);
     // this.add.rectangle(300, 650, 600, 1300, 0x000000).setAlpha(0.4);
@@ -99,13 +100,13 @@ class StartScene extends Phaser.Scene {
     // instructions.setOrigin(0.5);
 
     // Player car
-    this.player = this.physics.add.sprite(250, 950, "ic_jazi_car");
+    this.player = this.physics.add.sprite(250, 900, "ic_jazi_car");
     this.player.setCollideWorldBounds(true);
-    this.player.setScale(0.9).setOrigin(0.5, 0);
+    this.player.setScale(0.8).setOrigin(0.5, 0);
 
     // Play button
     const playButton = this.add
-      .image(300, 1150, "startBtn")
+      .image(300, 1100, "startBtn")
       .setInteractive({ useHandCursor: true })
       .setOrigin(0.5)
       .setScale(0.5);
@@ -146,8 +147,33 @@ class StartScene extends Phaser.Scene {
         ease: "Power2",
       });
     });
+
+    this.crossBtn = this.add
+      .image(550, 1200, "ic_cross")
+      .setOrigin(0.5)
+      .setDepth(10)
+      .setScale(1.4)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        this.tweens.add({
+          targets: this.crossBtn,
+          scale: 1.1,
+          duration: 100,
+          ease: "Power1",
+          onComplete: () => {
+            this.tweens.add({
+              targets: this.crossBtn,
+              scale: 1.4,
+              duration: 100,
+              ease: "Power1",
+              onComplete: () => {
+                // this.pauseMenu();
+              },
+            });
+          },
+        });
+      });
   }
 }
 
 export default StartScene;
-
