@@ -345,7 +345,7 @@ class GameScene extends Phaser.Scene {
         duration: 100,
         ease: "Power1",
         yoyo: true,
-        onComplete: () => {
+        onComplete: () => {this.resumeGame()
           this.killAllTimeEvents();
           this.scene.start("StartScene");
         },
@@ -641,4 +641,5 @@ class GameScene extends Phaser.Scene {
 }
 
 export default GameScene;
+
 
