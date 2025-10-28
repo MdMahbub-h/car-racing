@@ -620,8 +620,8 @@ class GameScene extends Phaser.Scene {
   }
   hitFinishLine(player, obstacle) {
     this.bgAudio.stop();
-    this.congratsSound = this.sound.add("congrats", { volume: 1 });
-    this.congratsSound.play();
+    // this.congratsSound = this.sound.add("congrats", { volume: 1 });
+    // this.congratsSound.play();
     setTimeout(() => {
       obstacle.disableBody(true, true);
     }, 1000);
@@ -641,3 +641,4 @@ class GameScene extends Phaser.Scene {
 }
 
 export default GameScene;
+
